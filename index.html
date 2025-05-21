@@ -205,7 +205,51 @@
         .negative {
             color: var(--danger);
         }
-        
+           #3d-waste-map {
+        height: 600px;
+        position: relative;
+        background: #222;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .map-controls {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
+    }
+    
+    .map-controls button {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s;
+    }
+    
+    .map-controls button:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .waste-tower {
+        position: absolute;
+        width: 20px;
+        background: rgba(231, 76, 60, 0.8);
+        border-radius: 5px 5px 0 0;
+        transform-origin: bottom;
+        transition: all 0.5s ease;
+    }
+
         /* Charts */
         .charts {
             display: grid;
@@ -1109,12 +1153,18 @@
                     </div>
                 </div>
                 
-                <div class="map-container">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Java_Barat_%28Jawa_Barat%29_location_map.svg/1200px-Java_Barat_%28Jawa_Barat%29_location_map.svg.png" alt="Peta Jawa Barat">
-                    <div class="map-overlay">
-                        Peta Interaktif Monitoring TPS/TPA/TPST
-                    </div>
-                </div>
+                <div class="map-container" id="3d-waste-map">
+    <!-- 3D Map akan dirender di sini -->
+    <div class="map-overlay">
+        <h3>3D Waste Monitoring Map</h3>
+        <div class="map-controls">
+            <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+            <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+            <button id="toggle-satellite"><i class="fas fa-satellite"></i></button>
+        </div>
+    </div>
+</div>
+
                 
                 <div class="chart-container">
                     <div class="chart-header">
@@ -1753,7 +1803,9 @@
         </div>
     </div>
 </div>
-
+<!-- Script 3D Map (Taruh Sebelum </body>) -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyWf1ecFE8Puh0ddI9S5Wmr2hCJmNZzfY&libraries=visualization"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Toggle sidebar
@@ -2039,6 +2091,101 @@
             bin.classList.toggle('pulse');
         });
     }, 5000);
+   // 1. Init 3D Map
+    const mapContainer = document.getElementById('3d-waste-map');
+    let map, threeJSOverlay;
+    
+    function init3DWasteMap() {
+        // Google Maps Base
+        map = new google.maps.Map(mapContainer, {
+            center: { lat: -6.9147, lng: 107.6098 }, // Pusat Jabar
+            zoom: 9,
+            tilt: 45, // 3D Perspective
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            styles: [
+                {
+                    featureType: "poi",
+                    stylers: [{ visibility: "off" }] // Hide unnecessary POIs
+                }
+            ]
+        });
+        
+        // Three.js Layer
+        threeJSOverlay = new ThreeJSOverlayView({
+            map,
+            onAdd: (scene) => {
+                // Add 3D waste towers
+                addWasteTowers(scene);
+            },
+            onUpdate: (scene) => {
+                // Real-time updates
+                updateWasteLevels(scene);
+            }
+        });
+    }
+    
+    // 2. Sample Data TPS/TPA di Jabar (Real-world coordinates)
+    const wasteLocations = [
+        { lat: -6.9147, lng: 107.6098, fillLevel: 0.85, name: "TPS Sarimukti" }, // Bandung
+        { lat: -6.5971, lng: 106.8060, fillLevel: 0.72, name: "TPA Cilodong" }, // Bogor
+        { lat: -6.2349, lng: 106.9926, fillLevel: 0.91, name: "TPA Sumur Batu" }, // Bekasi
+        { lat: -6.7320, lng: 108.5523, fillLevel: 0.68, name: "TPA Astapada" }, // Cirebon
+        // Tambahkan 23 lokasi lainnya...
+    ];
+    
+    // 3. Render 3D Waste Towers
+    function addWasteTowers(scene) {
+        wasteLocations.forEach(loc => {
+            const height = loc.fillLevel * 100; // Tinggi menara sampah (0-100m)
+            const color = loc.fillLevel > 0.8 ? 0xff0000 : loc.fillLevel > 0.5 ? 0xffa500 : 0x00ff00;
+            
+            const geometry = new THREE.BoxGeometry(0.01, 0.01, height);
+            const material = new THREE.MeshBasicMaterial({ color });
+            const tower = new THREE.Mesh(geometry, material);
+            
+            // Position tower based on lat/lng
+            const position = threeJSOverlay.latLngToVector3(
+                new google.maps.LatLng(loc.lat, loc.lng)
+            );
+            tower.position.copy(position);
+            tower.position.z = height / 2; // Center the tower
+            
+            scene.add(tower);
+            
+            // Add hover info
+            tower.userData = { name: loc.name, fillLevel: loc.fillLevel };
+        });
+    }
+    
+    // 4. Real-time Updates
+    function updateWasteLevels(scene) {
+        // Simulate real-time data changes
+        scene.children.forEach(tower => {
+            if (tower.userData) {
+                // Random fill level fluctuation (±5%)
+                const change = (Math.random() * 0.1) - 0.05;
+                tower.userData.fillLevel = Math.min(1, Math.max(0, tower.userData.fillLevel + change));
+                
+                // Update tower height & color
+                const newHeight = tower.userData.fillLevel * 100;
+                tower.scale.z = newHeight;
+                tower.position.z = newHeight / 2;
+                
+                if (tower.userData.fillLevel > 0.8) {
+                    tower.material.color.setHex(0xff0000); // Red
+                } else if (tower.userData.fillLevel > 0.5) {
+                    tower.material.color.setHex(0xffa500); // Orange
+                } else {
+                    tower.material.color.setHex(0x00ff00); // Green
+                }
+            }
+        });
+    }
+    
+    // 5. Init on load
+    window.addEventListener('load', init3DWasteMap);
+
+    
 </script>
 </body>
 </html>
