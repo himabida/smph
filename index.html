@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Waste Management IoT Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--dark);
+            color: white;
+            padding: 20px;
+            position: relative;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-90%);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo i {
+            font-size: 24px;
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .menu-item.active {
+            background-color: var(--primary);
+        }
+        
+        .menu-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .toggle-sidebar {
+            position: absolute;
+            right: -15px;
+            top: 20px;
+            background-color: var(--dark);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 101;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .header h2 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        
+        .card-header i {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .card-footer {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+        
+        .card-footer i {
+            margin-right: 5px;
+        }
+        
+        .positive {
+            color: var(--primary);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        /* Charts */
+        .charts {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            animation: slideUp 0.5s ease 0.2s backwards;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-actions button {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-actions button:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .chart {
+            height: 300px;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Waste Bins */
+        .waste-bins {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .bin-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            animation: slideUp 0.5s ease 0.4s backwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .bin-card.critical {
+            border-left: 5px solid var(--danger);
+        }
+        
+        .bin-card.warning {
+            border-left: 5px solid var(--warning);
+        }
+        
+        .bin-card.normal {
+            border-left: 5px solid var(--primary);
+        }
+        
+        .bin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .bin-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .bin-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .critical .bin-status {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+        
+        .warning .bin-status {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+        
+        .normal .bin-status {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--primary);
+        }
+        
+        .bin-location {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+        
+        .bin-location i {
+            margin-right: 5px;
+        }
+        
+        .bin-progress {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .bin-progress-bar {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .critical .bin-progress-bar {
+            background-color: var(--danger);
+            width: 95% !important;
+        }
+        
+        .warning .bin-progress-bar {
+            background-color: var(--warning);
+            width: 65% !important;
+        }
+        
+        .normal .bin-progress-bar {
+            background-color: var(--primary);
+            width: 30% !important;
+        }
+        
+        .bin-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bin-collection {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .bin-actions button {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .bin-actions button:hover {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        
+        /* AI Recommendations */
+        .ai-recommendations {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            animation: slideUp 0.5s ease 0.6s backwards;
+        }
+        
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .ai-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .ai-header i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        
+        .recommendation {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .recommendation:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .recommendation-icon {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .recommendation-content h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .recommendation-content p {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        /* Gamification */
+        .gamification {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            animation: slideUp 0.5s ease 0.8s backwards;
+        }
+        
+        .gamification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .gamification-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .leaderboard-rank {
+            font-weight: 700;
+            width: 30px;
+            text-align: center;
+            color: var(--dark);
+        }
+        
+        .leaderboard-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        
+        .leaderboard-info {
+            flex-grow: 1;
+        }
+        
+        .leaderboard-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .leaderboard-location {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .leaderboard-points {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .toggle-sidebar {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="logo">
+                <i class="fas fa-trash-alt"></i>
+                <h1>Smart Waste IoT</h1>
+            </div>
+            <div class="menu-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Waste Map</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-route"></i>
+                <span>Optimized Routes</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-robot"></i>
+                <span>AI Predictions</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-recycle"></i>
+                <span>Recycling</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-trophy"></i>
+                <span>Gamification</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Community</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2>Waste Management Dashboard</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <!-- Cards -->
+            <div class="cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Total Bins Monitored</h3>
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <div class="card-body">
+                        142
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>12% from last week</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Bins Needing Collection</h3>
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="card-body">
+                        18
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-down positive"></i>
+                        <span>5% from yesterday</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Carbon Reduced</h3>
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="card-body">
+                        2.4t
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>Equivalent to 50 trees</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Community Participation</h3>
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-body">
+                        1,248
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>32 new this week</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="charts">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Waste Collection Analytics</h3>
+                        <div class="chart-actions">
+                            <button>Day</button>
+                            <button class="active">Week</button>
+                            <button>Month</button>
+                        </div>
+                    </div>
+                    <div class="chart" id="wasteChart">
+                        <!-- Chart will be rendered here -->
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Waste Composition</h3>
+                        <div class="chart-actions">
+                            <button class="active">Today</button>
+                            <button>Avg.</button>
+                        </div>
+                    </div>
+                    <div class="chart" id="compositionChart">
+                        <!-- Chart will be rendered here -->
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Waste Bins -->
+            <div class="waste-bins">
+                <div class="bin-card critical">
+                    <div class="bin-header">
+                        <h3>TPS Sudirman Plaza</h3>
+                        <span class="bin-status">CRITICAL</span>
+                    </div>
+                    <div class="bin-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Jl. Sudirman No. 123</span>
+                    </div>
+                    <div class="bin-progress">
+                        <div class="bin-progress-bar"></div>
+                    </div>
+                    <div class="bin-footer">
+                        <div class="bin-collection">
+                            <i class="fas fa-clock"></i>
+                            <span>Last collected 2 days ago</span>
+                        </div>
+                        <div class="bin-actions">
+                            <button>Schedule Pickup</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bin-card warning">
+                    <div class="bin-header">
+                        <h3>TPS Merdeka Park</h3>
+                        <span class="bin-status">WARNING</span>
+                    </div>
+                    <div class="bin-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Jl. Merdeka No. 45</span>
+                    </div>
+                    <div class="bin-progress">
+                        <div class="bin-progress-bar"></div>
+                    </div>
+                    <div class="bin-footer">
+                        <div class="bin-collection">
+                            <i class="fas fa-clock"></i>
+                            <span>Last collected 1 day ago</span>
+                        </div>
+                        <div class="bin-actions">
+                            <button>Monitor</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bin-card normal">
+                    <div class="bin-header">
+                        <h3>TPS City Mall</h3>
+                        <span class="bin-status">NORMAL</span>
+                    </div>
+                    <div class="bin-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Jl. Pemuda No. 67</span>
+                    </div>
+                    <div class="bin-progress">
+                        <div class="bin-progress-bar"></div>
+                    </div>
+                    <div class="bin-footer">
+                        <div class="bin-collection">
+                            <i class="fas fa-clock"></i>
+                            <span>Last collected 4 hours ago</span>
+                        </div>
+                        <div class="bin-actions">
+                            <button>Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Recommendations -->
+            <div class="ai-recommendations">
+                <div class="ai-header">
+                    <h3>AI Optimization Recommendations</h3>
+                    <i class="fas fa-robot pulse"></i>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>Optimize Collection Route</h4>
+                        <p>AI suggests combining pickup for TPS Sudirman Plaza and TPS Merdeka Park into a single route, saving 12km and ~45 minutes.</p>
+                    </div>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>Predicted Overflow Alert</h4>
+                        <p>Based on historical data, TPS Central Market is predicted to reach 90% capacity within 6 hours due to weekend shopping traffic.</p>
+                    </div>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>Recycling Opportunity</h4>
+                        <p>TPS City Mall shows 68% recyclable materials. Consider adding a recycling bin and incentive program for this location.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gamification -->
+            <div class="gamification">
+                <div class="gamification-header">
+                    <h3>Community Leaderboard</h3>
+                    <i class="fas fa-trophy"></i>
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">1</div>
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">Budi Santoso</div>
+                            <div class="leaderboard-location">Kelurahan Menteng</div>
+                        </div>
+                        <div class="leaderboard-points">1,245 pts</div>
+                    </div>
+                    
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">2</div>
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">Ani Wijaya</div>
+                            <div class="leaderboard-location">Kelurahan Kebayoran</div>
+                        </div>
+                        <div class="leaderboard-points">1,120 pts</div>
+                    </div>
+                    
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">3</div>
+                        <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">Rudi Hermawan</div>
+                            <div class="leaderboard-location">Kelurahan Senayan</div>
+                        </div>
+                        <div class="leaderboard-points">987 pts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            this.querySelector('i').classList.toggle('fa-bars');
+            this.querySelector('i').classList.toggle('fa-times');
+        });
+
+        // Menu item active state
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                menuItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Main Chart
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const mainChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Waste Collected (kg)',
+                        data: [1200, 1900, 1700, 2100, 2300, 2500, 2000],
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Recyclables Collected (kg)',
+                        data: [400, 700, 500, 900, 1100, 800, 600],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Organic', 'Plastic', 'Paper', 'Metal', 'Glass', 'Other'],
+                datasets: [{
+                    data: [35, 25, 15, 10, 8, 7],
+                    backgroundColor: [
+                        '#2ecc71',
+                        '#e74c3c',
+                        '#f39c12',
+                        '#3498db',
+                        '#9b59b6',
+                        '#95a5a6'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Animate progress bars
+        document.querySelectorAll('.bin-progress-bar').forEach(bar => {
+            // Random width for demo (in a real app, this would come from API)
+            const width = bar.parentElement.classList.contains('critical') ? 95 :
+                         bar.parentElement.classList.contains('warning') ? 65 : 30;
+            
+            // Set width with animation
+            setTimeout(() => {
+                bar.style.width = `${width}%`;
+            }, 500);
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Randomly update some bin statuses
+            const bins = document.querySelectorAll('.bin-card');
+            bins.forEach(bin => {
+                if (Math.random() > 0.7) {
+                    const progressBar = bin.querySelector('.bin-progress-bar');
+                    const currentWidth = parseInt(progressBar.style.width || '30');
+                    const newWidth = Math.min(100, currentWidth + Math.random() * 10);
+                    
+                    progressBar.style.width = `${newWidth}%`;
+                    
+                    // Update status if needed
+                    if (newWidth > 80) {
+                        bin.classList.remove('normal', 'warning');
+                        bin.classList.add('critical');
+                        bin.querySelector('.bin-status').textContent = 'CRITICAL';
+                    } else if (newWidth > 50) {
+                        bin.classList.remove('normal', 'critical');
+                        bin.classList.add('warning');
+                        bin.querySelector('.bin-status').textContent = 'WARNING';
+                    }
+                }
+            });
+            
+            // Flash critical bins
+            document.querySelectorAll('.bin-card.critical').forEach(bin => {
+                bin.classList.toggle('pulse');
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
