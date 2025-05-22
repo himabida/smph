@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Waste Management - Jawa Barat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--dark);
+            color: white;
+            padding: 20px;
+            position: relative;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-90%);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo i {
+            font-size: 24px;
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .menu-item.active {
+            background-color: var(--primary);
+        }
+        
+        .menu-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .toggle-sidebar {
+            position: absolute;
+            right: -15px;
+            top: 20px;
+            background-color: var(--dark);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 101;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .header h2 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        
+        .card-header i {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        .card-body {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .card-footer {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+        
+        .card-footer i {
+            margin-right: 5px;
+        }
+        
+        .positive {
+            color: var(--primary);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        /* Map Styles */
+        #waste-map {
+            height: 600px;
+            position: relative;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .legend {
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .map-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .map-controls button {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .map-controls button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Charts */
+        .charts {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            animation: slideUp 0.5s ease 0.2s backwards;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-actions button {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-actions button:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .chart {
+            height: 300px;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Waste Bins */
+        .waste-bins {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .bin-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            animation: slideUp 0.5s ease 0.4s backwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .bin-card.critical {
+            border-left: 5px solid var(--danger);
+        }
+        
+        .bin-card.warning {
+            border-left: 5px solid var(--warning);
+        }
+        
+        .bin-card.normal {
+            border-left: 5px solid var(--primary);
+        }
+        
+        .bin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .bin-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .bin-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .critical .bin-status {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+        
+        .warning .bin-status {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+        
+        .normal .bin-status {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--primary);
+        }
+        
+        .bin-location {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+        
+        .bin-location i {
+            margin-right: 5px;
+        }
+        
+        .bin-progress {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .bin-progress-bar {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .critical .bin-progress-bar {
+            background-color: var(--danger);
+            width: 95% !important;
+        }
+        
+        .warning .bin-progress-bar {
+            background-color: var(--warning);
+            width: 65% !important;
+        }
+        
+        .normal .bin-progress-bar {
+            background-color: var(--primary);
+            width: 30% !important;
+        }
+        
+        .bin-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bin-collection {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .bin-actions button {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .bin-actions button:hover {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        
+        /* AI Recommendations */
+        .ai-recommendations {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            animation: slideUp 0.5s ease 0.6s backwards;
+        }
+        
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .ai-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .ai-header i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        
+        .recommendation {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .recommendation:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .recommendation-icon {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .recommendation-content h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .recommendation-content p {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        /* Gamification */
+        .gamification {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            animation: slideUp 0.5s ease 0.8s backwards;
+        }
+        
+        .gamification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .gamification-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .leaderboard-rank {
+            font-weight: 700;
+            width: 30px;
+            text-align: center;
+            color: var(--dark);
+        }
+        
+        .leaderboard-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        
+        .leaderboard-info {
+            flex-grow: 1;
+        }
+        
+        .leaderboard-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .leaderboard-location {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .leaderboard-points {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* Page Content */
+        .page-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        /* Location List */
+        .location-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .location-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .location-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .location-type {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary);
+        }
+        
+        .location-body {
+            margin-bottom: 10px;
+        }
+        
+        .location-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        /* Route Optimization */
+        .route-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .route-savings {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .route-steps {
+            margin-top: 15px;
+            border-left: 2px solid #eee;
+            padding-left: 20px;
+        }
+        
+        .route-step {
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .route-step:last-child {
+            padding-bottom: 0;
+        }
+        
+        .route-step::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+        }
+        
+        .route-step h4 {
+            margin-bottom: 5px;
+        }
+        
+        .route-step p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        /* Settings */
+        .settings-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .settings-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #ddd;
+            color: var(--dark);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .toggle-sidebar {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="logo">
+                <i class="fas fa-trash-alt"></i>
+                <h1>Smart Waste Jabar</h1>
+            </div>
+            <div class="menu-item active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="menu-item" data-page="peta-sampah">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Peta Sampah</span>
+            </div>
+            <div class="menu-item" data-page="rute-optimal">
+                <i class="fas fa-route"></i>
+                <span>Rute Optimal</span>
+            </div>
+            <div class="menu-item" data-page="prediksi-ai">
+                <i class="fas fa-robot"></i>
+                <span>Prediksi AI</span>
+            </div>
+            <div class="menu-item" data-page="daur-ulang">
+                <i class="fas fa-recycle"></i>
+                <span>Daur Ulang</span>
+            </div>
+            <div class="menu-item" data-page="gamifikasi">
+                <i class="fas fa-trophy"></i>
+                <span>Gamifikasi</span>
+            </div>
+            <div class="menu-item" data-page="komunitas">
+                <i class="fas fa-users"></i>
+                <span>Komunitas</span>
+            </div>
+            <div class="menu-item" data-page="pengaturan">
+                <i class="fas fa-cog"></i>
+                <span>Pengaturan</span>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Page -->
+            <div class="page-content active" id="dashboard">
+                <div class="header">
+                    <h2>Dashboard Monitoring Sampah</h2>
+                    <div class="user-profile">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                        <span>Admin</span>
+                    </div>
+                </div>
+                
+                <!-- Cards -->
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Total TPS Dimonitor</h3>
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <div class="card-body">
+                            142
+                        </div>
+                        <div class="card-footer">
+                            <i class="fas fa-arrow-up positive"></i>
+                            <span>12% dari minggu lalu</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>TPS Perlu Pengangkutan</h3>
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="card-body">
+                            18
+                        </div>
+                        <div class="card-footer">
+                            <i class="fas fa-arrow-down positive"></i>
+                            <span>5% dari kemarin</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Pengurangan Karbon</h3>
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="card-body">
+                            2.4t
+                        </div>
+                        <div class="card-footer">
+                            <i class="fas fa-arrow-up positive"></i>
+                            <span>Setara 50 pohon</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Partisipasi Masyarakat</h3>
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-body">
+                            1,248
+                        </div>
+                        <div class="card-footer">
+                            <i class="fas fa-arrow-up positive"></i>
+                            <span>32 baru minggu ini</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Analisis Pengumpulan Sampah</h3>
+                            <div class="chart-actions">
+                                <button>Hari</button>
+                                <button class="active">Minggu</button>
+                                <button>Bulan</button>
+                            </div>
+                        </div>
+                        <div class="chart" id="wasteChart">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Komposisi Sampah</h3>
+                            <div class="chart-actions">
+                                <button class="active">Hari Ini</button>
+                                <button>Rata-rata</button>
+                            </div>
+                        </div>
+                        <div class="chart" id="compositionChart">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Waste Bins -->
+                <div class="waste-bins">
+                    <div class="bin-card critical">
+                        <div class="bin-header">
+                            <h3>TPS Sarimukti</h3>
+                            <span class="bin-status">KRITIS</span>
+                        </div>
+                        <div class="bin-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kab. Bandung</span>
+                        </div>
+                        <div class="bin-progress">
+                            <div class="bin-progress-bar"></div>
+                        </div>
+                        <div class="bin-footer">
+                            <div class="bin-collection">
+                                <i class="fas fa-clock"></i>
+                                <span>Terakhir diangkut 2 hari lalu</span>
+                            </div>
+                            <div class="bin-actions">
+                                <button>Jadwalkan Pengambilan</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bin-card warning">
+                        <div class="bin-header">
+                            <h3>TPST Baleendah</h3>
+                            <span class="bin-status">PERINGATAN</span>
+                        </div>
+                        <div class="bin-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kab. Bandung</span>
+                        </div>
+                        <div class="bin-progress">
+                            <div class="bin-progress-bar"></div>
+                        </div>
+                        <div class="bin-footer">
+                            <div class="bin-collection">
+                                <i class="fas fa-clock"></i>
+                                <span>Terakhir diangkut 1 hari lalu</span>
+                            </div>
+                            <div class="bin-actions">
+                                <button>Pantau</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bin-card normal">
+                        <div class="bin-header">
+                            <h3>TPS Gedebage</h3>
+                            <span class="bin-status">NORMAL</span>
+                        </div>
+                        <div class="bin-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kota Bandung</span>
+                        </div>
+                        <div class="bin-progress">
+                            <div class="bin-progress-bar"></div>
+                        </div>
+                        <div class="bin-footer">
+                            <div class="bin-collection">
+                                <i class="fas fa-clock"></i>
+                                <span>Terakhir diangkut 4 jam lalu</span>
+                            </div>
+                            <div class="bin-actions">
+                                <button>Detail</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Recommendations -->
+                <div class="ai-recommendations">
+                    <div class="ai-header">
+                        <h3>Rekomendasi Optimasi AI</h3>
+                        <i class="fas fa-robot pulse"></i>
+                    </div>
+                    
+                    <div class="recommendation">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <h4>Optimasi Rute Pengumpulan</h4>
+                            <p>AI menyarankan menggabungkan pengambilan untuk TPS Sarimukti dan TPST Baleendah dalam satu rute, menghemat 12km dan ~45 menit.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <h4>Peringatan Prediksi Kelebihan</h4>
+                            <p>Berdasarkan data historis, TPS Cilodong diprediksi mencapai 90% kapasitas dalam 6 jam karena aktivitas akhir pekan.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <h4>Peluang Daur Ulang</h4>
+                            <p>TPS Gedebage menunjukkan 68% material daur ulang. Pertimbangkan menambah tempat sampah daur ulang dan program insentif.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gamification -->
+                <div class="gamification">
+                    <div class="gamification-header">
+                        <h3>Peringkat Komunitas</h3>
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    
+                    <div class="leaderboard">
+                        <div class="leaderboard-item">
+                            <div class="leaderboard-rank">1</div>
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="leaderboard-avatar">
+                            <div class="leaderboard-info">
+                                <div class="leaderboard-name">Budi Santoso</div>
+                                <div class="leaderboard-location">Kelurahan Menteng</div>
+                            </div>
+                            <div class="leaderboard-points">1,245 pts</div>
+                        </div>
+                        
+                        <div class="leaderboard-item">
+                            <div class="leaderboard-rank">2</div>
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="leaderboard-avatar">
+                            <div class="leaderboard-info">
+                                <div class="leaderboard-name">Ani Wijaya</div>
+                                <div class="leaderboard-location">Kelurahan Kebayoran</div>
+                            </div>
+                            <div class="leaderboard-points">1,120 pts</div>
+                        </div>
+                        
+                        <div class="leaderboard-item">
+                            <div class="leaderboard-rank">3</div>
+                            <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User" class="leaderboard-avatar">
+                            <div class="leaderboard-info">
+                                <div class="leaderboard-name">Rudi Hermawan</div>
+                                <div class="leaderboard-location">Kelurahan Senayan</div>
+                            </div>
+                            <div class="leaderboard-points">987 pts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Peta Sampah Page -->
+            <div class="page-content" id="peta-sampah">
+                <div class="header">
+                    <h2>Peta Sampah Jawa Barat</h2>
+                    <div class="user-profile">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                        <span>Admin</span>
+                    </div>
+                </div>
+                
+                <div id="waste-map">
+                    <!-- Map will be rendered here -->
+                    <div class="map-overlay">
+                        <h3>Peta Fasilitas Sampah Jawa Barat</h3>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                                <span>TPA (Tempat Pemrosesan Akhir)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #2ecc71;"></div>
+                                <span>TPST (Tempat Pengolahan Sampah Terpadu)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #f39c12;"></div>
+                                <span>TPS (Tempat Pembuangan Sementara)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="map-controls">
+                        <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+                        <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+                        <button id="toggle-satellite"><i class="fas fa-satellite"></i></button>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Lokasi TPA, TPS, dan TPST di Jawa Barat</h3>
+                    </div>
+                    <div class="location-list">
+                        <!-- Kabupaten Bandung -->
+                        <div class="location-card">
+                            <div class="location-header">
+                                <h3>Kabupaten Bandung</h3>
+                                <span class="location-type">TPA</span>
+                            </div>
+                            <div class="location-body">
+                                <p><i class="fas fa-map-marker-alt"></i> Sarimukti</p>
+                                <p><i class="fas fa-trash-alt"></i> Kapasitas: 500 ton/hari</p>
+        
+
+                                                                 <p><i class="fas fa-trash-alt"></i> Kapasitas: 500 ton/hari</p>                       </div>
+                        <div class="location-footer">
+                            <span><i class="fas fa-bell"></i> 3 notifikasi hari ini</span>
+                            <span><i class="fas fa-eye"></i> Pantau</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kota Bandung -->
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h3>Kota Bandung</h3>
+                            <span class="location-type">TPA</span>
+                        </div>
+                        <div class="location-body">
+                            <p><i class="fas fa-map-marker-alt"></i> Gedebage</p>
+                            <p><i class="fas fa-trash-alt"></i> Kapasitas: 300 ton/hari</p>
+                        </div>
+                        <div class="location-footer">
+                            <span><i class="fas fa-bell"></i> 1 notifikasi hari ini</span>
+                            <span><i class="fas fa-eye"></i> Pantau</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kabupaten Bogor -->
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h3>Kabupaten Bogor</h3>
+                            <span class="location-type">TPA</span>
+                        </div>
+                        <div class="location-body">
+                            <p><i class="fas fa-map-marker-alt"></i> Cilodong</p>
+                            <p><i class="fas fa-trash-alt"></i> Kapasitas: 450 ton/hari</p>
+                        </div>
+                        <div class="location-footer">
+                            <span><i class="fas fa-bell"></i> 3 notifikasi hari ini</span>
+                            <span><i class="fas fa-eye"></i> Pantau</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kota Bogor -->
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h3>Kota Bogor</h3>
+                            <span class="location-type">TPA</span>
+                        </div>
+                        <div class="location-body">
+                            <p><i class="fas fa-map-marker-alt"></i> Galuga</p>
+                            <p><i class="fas fa-trash-alt"></i> Kapasitas: 350 ton/hari</p>
+                        </div>
+                        <div class="location-footer">
+                            <span><i class="fas fa-bell"></i> 2 notifikasi hari ini</span>
+                            <span><i class="fas fa-eye"></i> Pantau</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kabupaten Bekasi -->
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h3>Kabupaten Bekasi</h3>
+                            <span class="location-type">TPA</span>
+                        </div>
+                        <div class="location-body">
+                            <p><i class="fas fa-map-marker-alt"></i> Burangkeng</p>
+                            <p><i class="fas fa-trash-alt"></i> Kapasitas: 400 ton/hari</p>
+                        </div>
+                        <div class="location-footer">
+                            <span><i class="fas fa-bell"></i> 4 notifikasi hari ini</span>
+                            <span><i class="fas fa-eye"></i> Pantau</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kota Bekasi -->
+                    <div class="location-card">
+                        <div class="location-header">
+                            <h3>Kota Bekasi</h3>
+                            <span class="location-type">TPA</span>
+                        </div>
+                        <div class="location-body">
+                            <p><i class="fas fa-map-marker-alt"></i> Sumur Batu</p>
+                            <p><i class="fas fa-trash-alt"></i> Kapasitas: 600 ton/hari</p>
+                        </div>
+                        <div class="location-footer">
+                            <span><i class="fas fa-bell"></i> 7 notifikasi hari ini</span>
+                            <span><i class="fas fa-eye"></i> Pantau</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rute Optimal Page -->
+        <div class="page-content" id="rute-optimal">
+            <div class="header">
+                <h2>Optimasi Rute Pengangkutan</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <img src="https://maps.googleapis.com/maps/api/staticmap?center=Bandung,Indonesia&zoom=10&size=800x400&maptype=roadmap&markers=color:red%7CBandung&markers=color:blue%7CBogor&markers=color:green%7CBekasi&path=color:0xff0000%7Cweight:5%7CBandung%7CBogor%7CBekasi&key=YOUR_API_KEY" alt="Peta Rute">
+                <div class="map-overlay">
+                    Rute Pengangkutan Sampah Optimal
+                </div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <h3>Rute Hari Ini - 27 Kab/Kota</h3>
+                    <span class="route-savings">Menghemat 42km (18%)</span>
+                </div>
+                <p>Rute yang dioptimalkan oleh sistem AI berdasarkan data real-time dari sensor IoT</p>
+                
+                <div class="route-steps">
+                    <div class="route-step">
+                        <h4>1. Kabupaten Bandung</h4>
+                        <p>TPS Sarimukti (Kapasitas 92%) → TPST Baleendah (Kapasitas 78%)</p>
+                    </div>
+                    <div class="route-step">
+                        <h4>2. Kota Bandung</h4>
+                        <p>TPS Gedebage (Kapasitas 65%) → TPST Babakan Sari (Kapasitas 58%)</p>
+                    </div>
+                    <div class="route-step">
+                        <h4>3. Kabupaten Bogor</h4>
+                        <p>TPS Cilodong (Kapasitas 85%) → TPST Cibinong (Kapasitas 72%)</p>
+                    </div>
+                    <div class="route-step">
+                        <h4>4. Kota Bogor</h4>
+                        <p>TPS Galuga (Kapasitas 68%) → TPST Kedunghalang (Kapasitas 61%)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <h3>Rute Besok - Prediksi AI</h3>
+                    <span class="route-savings">Estimasi Penghematan 35km (15%)</span>
+                </div>
+                <p>Rute prediktif berdasarkan pola historis dan data cuaca</p>
+                
+                <div class="route-steps">
+                    <div class="route-step">
+                        <h4>1. Kabupaten Bekasi</h4>
+                        <p>TPS Burangkeng → TPST Setu</p>
+                    </div>
+                    <div class="route-step">
+                        <h4>2. Kota Bekasi</h4>
+                        <p>TPS Sumur Batu → TPST Bantar Gebang</p>
+                    </div>
+                    <div class="route-step">
+                        <h4>3. Kabupaten Karawang</h4>
+                        <p>TPS Tegalsari → TPST Klari</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Prediksi AI Page -->
+        <div class="page-content" id="prediksi-ai">
+            <div class="header">
+                <h2>Prediksi Kecerdasan Buatan</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Prediksi Volume Sampah 7 Hari Mendatang</h3>
+                    <div class="chart-actions">
+                        <button class="active">Kab/Kota</button>
+                        <button>Regional</button>
+                    </div>
+                </div>
+                <div class="chart">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="ai-recommendations">
+                <div class="ai-header">
+                    <h3>Insight & Rekomendasi</h3>
+                    <i class="fas fa-robot pulse"></i>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>Puncak Volume Akhir Pekan</h4>
+                        <p>AI memprediksi peningkatan 25% volume sampah di TPA Sarimukti pada hari Sabtu-Minggu karena aktivitas wisata.</p>
+                    </div>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-cloud-rain"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>Pengaruh Cuaca</h4>
+                        <p>Prediksi hujan di wilayah Bogor akan mengurangi volume sampah di TPST Cibinong sebesar 15% besok.</p>
+                    </div>
+                </div>
+                
+                <div class="recommendation">
+                    <div class="recommendation-icon">
+                        <i class="fas fa-trash-restore"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>Peluang Daur Ulang</h4>
+                        <p>Analisis AI menunjukkan potensi peningkatan 30% material daur ulang di TPS Gedebage selama bulan depan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Daur Ulang Page -->
+        <div class="page-content" id="daur-ulang">
+            <div class="header">
+                <h2>Manajemen Daur Ulang</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Material Terdaur Ulang</h3>
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <div class="card-body">
+                        542 kg
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>18% dari minggu lalu</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Pendapatan Daur Ulang</h3>
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="card-body">
+                        Rp 12,450,000
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>7% dari bulan lalu</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Mitra Daur Ulang</h3>
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="card-body">
+                        28
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>3 mitra baru</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Komposisi Material Daur Ulang</h3>
+                </div>
+                <div class="chart">
+                    <canvas id="recyclingChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="location-list">
+                <div class="location-card">
+                    <div class="location-header">
+                        <h3>Bank Sampah Digital</h3>
+                        <span class="location-type">Inovasi</span>
+                    </div>
+                    <div class="location-body">
+                        <p><i class="fas fa-mobile-alt"></i> Aplikasi mobile untuk setor sampah</p>
+                        <p><i class="fas fa-coins"></i> 1.248 pengguna aktif</p>
+                    </div>
+                    <div class="location-footer">
+                        <span><i class="fas fa-chart-line"></i> +32% bulan ini</span>
+                        <span><i class="fas fa-eye"></i> Detail</span>
+                    </div>
+                </div>
+                
+                <div class="location-card">
+                    <div class="location-header">
+                        <h3>TPST 3R Cibinong</h3>
+                        <span class="location-type">Pilot Project</span>
+                    </div>
+                    <div class="location-body">
+                        <p><i class="fas fa-map-marker-alt"></i> Kabupaten Bogor</p>
+                        <p><i class="fas fa-recycle"></i> 85% sampah terolah</p>
+                    </div>
+                    <div class="location-footer">
+                        <span><i class="fas fa-award"></i> Penghargaan Adipura</span>
+                        <span><i class="fas fa-eye"></i> Detail</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gamifikasi Page -->
+        <div class="page-content" id="gamifikasi">
+            <div class="header">
+                <h2>Program Gamifikasi</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Peserta Aktif</h3>
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-body">
+                        5,248
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>324 baru bulan ini</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Total Poin Ditukar</h3>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="card-body">
+                        124,582
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>12% dari bulan lalu</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Hadiah Tersedia</h3>
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div class="card-body">
+                        78
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>15 hadiah baru</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gamification">
+                <div class="gamification-header">
+                    <h3>Peringkat Kabupaten/Kota</h3>
+                    <i class="fas fa-trophy"></i>
+                </div>
+                
+                <div class="leaderboard">
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">1</div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Coat_of_arms_of_Bandung.svg/1200px-Coat_of_arms_of_Bandung.svg.png" alt="Kota Bandung" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">Kota Bandung</div>
+                            <div class="leaderboard-location">Partisipasi 78%</div>
+                        </div>
+                        <div class="leaderboard-points">24,582 pts</div>
+                    </div>
+                    
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">2</div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Lambang_Kota_Bogor.png/1200px-Lambang_Kota_Bogor.png" alt="Kota Bogor" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">Kota Bogor</div>
+                            <div class="leaderboard-location">Partisipasi 72%</div>
+                        </div>
+                        <div class="leaderboard-points">21,450 pts</div>
+                    </div>
+                    
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">3</div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Lambang_Kabupaten_Bandung.png/1200px-Lambang_Kabupaten_Bandung.png" alt="Kab. Bandung" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">Kab. Bandung</div>
+                            <div class="leaderboard-location">Partisipasi 68%</div>
+                        </div>
+                        <div class="leaderboard-points">19,987 pts</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Tren Partisipasi Masyarakat</h3>
+                </div>
+                <div class="chart">
+                    <canvas id="participationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Komunitas Page -->
+        <div class="page-content" id="komunitas">
+            <div class="header">
+                <h2>Keterlibatan Komunitas</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Kelompok Komunitas</h3>
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-body">
+                        142
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>12 grup baru</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Kegiatan Bulan Ini</h3>
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="card-body">
+                        28
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>5 kegiatan baru</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Relawan Aktif</h3>
+                        <i class="fas fa-hands-helping"></i>
+                    </div>
+                    <div class="card-body">
+                        1,245
+                    </div>
+                    <div class="card-footer">
+                        <i class="fas fa-arrow-up positive"></i>
+                        <span>87 relawan baru</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="location-list">
+                <div class="location-card">
+                    <div class="location-header">
+                        <h3>Komunitas Bandung Bersih</h3>
+                        <span class="location-type">Aktif</span>
+                    </div>
+                    <div class="location-body">
+                        <p><i class="fas fa-map-marker-alt"></i> Kota Bandung</p>
+                        <p><i class="fas fa-trash-restore"></i> Fokus: Daur Ulang</p>
+                    </div>
+                    <div class="location-footer">
+                        <span><i class="fas fa-user-friends"></i> 248 anggota</span>
+                        <span><i class="fas fa-eye"></i> Detail</span>
+                    </div>
+                </div>
+                
+                <div class="location-card">
+                    <div class="location-header">
+                        <h3>Bogor Hijau</h3>
+                        <span class="location-type">Aktif</span>
+                    </div>
+                    <div class="location-body">
+                        <p><i class="fas fa-map-marker-alt"></i> Kota Bogor</p>
+                        <p><i class="fas fa-leaf"></i> Fokus: Kompos</p>
+                    </div>
+                    <div class="location-footer">
+                        <span><i class="fas fa-user-friends"></i> 187 anggota</span>
+                        <span><i class="fas fa-eye"></i> Detail</span>
+                    </div>
+                </div>
+                
+                <div class="location-card">
+                    <div class="location-header">
+                        <h3>Bekasi Lestari</h3>
+                        <span class="location-type">Baru</span>
+                    </div>
+                    <div class="location-body">
+                        <p><i class="fas fa-map-marker-alt"></i> Kota Bekasi</p>
+                        <p><i class="fas fa-recycle"></i> Fokus: 3R</p>
+                    </div>
+                    <div class="location-footer">
+                        <span><i class="fas fa-user-friends"></i> 92 anggota</span>
+                        <span><i class="fas fa-eye"></i> Detail</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Distribusi Komunitas per Kab/Kota</h3>
+                </div>
+                <div class="chart">
+                    <canvas id="communityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pengaturan Page -->
+        <div class="page-content" id="pengaturan">
+            <div class="header">
+                <h2>Pengaturan Sistem</h2>
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-header">
+                    <h3><i class="fas fa-user-cog"></i> Profil Pengguna</h3>
+                </div>
+                <div class="form-group">
+                    <label>Nama</label>
+                    <input type="text" value="Admin">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" value="admin@smartwastejabar.id">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select>
+                        <option>Administrator</option>
+                        <option>Operator</option>
+                        <option>Viewer</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary">Batal</button>
+                    <button class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-header">
+                    <h3><i class="fas fa-bell"></i> Notifikasi</h3>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Notifikasi Email
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Notifikasi Aplikasi
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox"> Notifikasi SMS
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary">Reset</button>
+                    <button class="btn btn-primary">Simpan</button>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-header">
+                    <h3><i class="fas fa-cog"></i> Pengaturan Sistem</h3>
+                </div>
+                <div class="form-group">
+                    <label>Bahasa</label>
+                    <select>
+                        <option selected>Bahasa Indonesia</option>
+                        <option>English</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tema</label>
+                    <select>
+                        <option selected>Terang</option>
+                        <option>Gelap</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Zona Waktu</label>
+                    <select>
+                        <option selected>WIB (UTC+7)</option>
+                        <option>WITA (UTC+8)</option>
+                        <option>WIT (UTC+9)</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=visualization"></script>
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+<script>
+    // Toggle sidebar
+    document.getElementById('toggleSidebar').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+        this.querySelector('i').classList.toggle('fa-bars');
+        this.querySelector('i').classList.toggle('fa-times');
+    });
+
+    // Menu navigation
+    const menuItems = document.querySelectorAll('.menu-item');
+    const pageContents = document.querySelectorAll('.page-content');
+    
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Remove active class from all menu items
+            menuItems.forEach(i => i.classList.remove('active'));
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Hide all page contents
+            pageContents.forEach(content => content.classList.remove('active'));
+            
+            // Show selected page content
+            const pageId = this.getAttribute('data-page');
+            document.getElementById(pageId).classList.add('active');
+            
+            // Initialize map when waste map page is shown
+            if (pageId === 'peta-sampah') {
+                initWasteMap();
+            }
+        });
+    });
+
+    // Initialize waste map
+    function initWasteMap() {
+        // Complete dataset for West Java (27 regencies/cities)
+        const wasteLocations = [
+            // ===== KABUPATEN =====
+            // 1. KAB. BANDUNG
+            { lat: -6.966667, lng: 107.566667, type: "TPA", name: "TPA Sarimukti", address: "Jl. Raya Sarimukti" },
+            { lat: -6.989722, lng: 107.621944, type: "TPST", name: "TPST Baleendah", address: "Jl. Baleendah No.123" },
+            
+            // 2. KAB. BOGOR
+            { lat: -6.481944, lng: 106.854167, type: "TPA", name: "TPA Cilodong", address: "Jl. Raya Cilodong" },
+            
+            // 3. KAB. BEKASI
+            { lat: -6.381944, lng: 107.076111, type: "TPA", name: "TPA Burangkeng", address: "Jl. Burangkeng No.12" },
+            
+            // 4. KAB. GARUT
+            { lat: -7.2278, lng: 107.9087, type: "TPA", name: "TPA Cikajang", address: "Jl. Raya Cikajang" },
+            
+            // 5. KAB. TASIKMALAYA
+            { lat: -7.3274, lng: 108.2207, type: "TPA", name: "TPA Cibeureum", address: "Jl. Cibeureum No.45" },
+            
+            // 6. KAB. CIAMIS
+            { lat: -7.3327, lng: 108.3493, type: "TPA", name: "TPA Ciamis", address: "Jl. Raya Ciamis" },
+            
+            // 7. KAB. KUNINGAN
+            { lat: -6.9819, lng: 108.4832, type: "TPA", name: "TPA Kuningan", address: "Jl. Raya Kuningan" },
+            
+            // 8. KAB. CIREBON
+            { lat: -6.7320, lng: 108.5523, type: "TPA", name: "TPA Astapada", address: "Jl. Astapada" },
+            
+            // 9. KAB. MAJALENGKA
+            { lat: -6.8364, lng: 108.2279, type: "TPA", name: "TPA Majalengka", address: "Jl. Raya Majalengka" },
+            
+            // 10. KAB. SUMEDANG
+            { lat: -6.8586, lng: 107.9166, type: "TPA", name: "TPA Sumedang", address: "Jl. Raya Sumedang" },
+            
+            // 11. KAB. INDRAMAYU
+            { lat: -6.3373, lng: 108.3258, type: "TPA", name: "TPA Indramayu", address: "Jl. Raya Indramayu" },
+            
+            // 12. KAB. SUBANG
+            { lat: -6.5717, lng: 107.7605, type: "TPA", name: "TPA Subang", address: "Jl. Raya Subang" },
+            
+            // 13. KAB. PURWAKARTA
+            { lat: -6.5649, lng: 107.4325, type: "TPA", name: "TPA Purwakarta", address: "Jl. Raya Purwakarta" },
+            
+            // 14. KAB. KARAWANG
+            { lat: -6.3227, lng: 107.3376, type: "TPA", name: "TPA Karawang", address: "Jl. Raya Karawang" },
+            
+            // 15. KAB. BANDUNG BARAT
+            { lat: -6.8652, lng: 107.4917, type: "TPA", name: "TPA Bandung Barat", address: "Jl. Raya Bandung Barat" },
+            
+            // 16. KAB. PANGANDARAN
+            { lat: -7.6151, lng: 108.5290, type: "TPA", name: "TPA Pangandaran", address: "Jl. Raya Pangandaran" },
+            
+            // 17. KAB. BOGOR (additional)
+            { lat: -6.5517, lng: 106.6291, type: "TPST", name: "TPST Cibinong", address: "Jl. Raya Cibinong" },
+            
+            // ===== KOTA =====
+            // 18. KOTA BANDUNG
+            { lat: -6.939722, lng: 107.643889, type: "TPA", name: "TPA Gedebage", address: "Jl. Gedebage No.45" },
+            
+            // 19. KOTA BOGOR
+            { lat: -6.560833, lng: 106.789167, type: "TPA", name: "TPA Galuga", address: "Jl. Galuga Raya" },
+            
+            // 20. KOTA BEKASI
+            { lat: -6.2349, lng: 106.9926, type: "TPA", name: "TPA Sumur Batu", address: "Jl. Sumur Batu" },
+            
+            // 21. KOTA CIMAHI
+            { lat: -6.8841, lng: 107.5413, type: "TPST", name: "TPST Cimahi", address: "Jl. Raya Cimahi" },
+            
+            // 22. KOTA TASIKMALAYA
+            { lat: -7.3506, lng: 108.2172, type: "TPA", name: "TPA Tasikmalaya", address: "Jl. Raya Tasikmalaya" },
+            
+            // 23. KOTA CIREBON
+            { lat: -6.7320, lng: 108.5523, type: "TPA", name: "TPA Cirebon", address: "Jl. Raya Cirebon" },
+            
+            // 24. KOTA BANJAR
+            { lat: -7.3700, lng: 108.5340, type: "TPST", name: "TPST Banjar", address: "Jl. Raya Banjar" },
+            
+            // 25. KOTA DEPOK
+            { lat: -6.4025, lng: 106.7942, type: "TPST", name: "TPST Depok", address: "Jl. Raya Depok" },
+            
+            // 26. KOTA SUKABUMI
+            { lat: -6.9277, lng: 106.9299, type: "TPA", name: "TPA Sukabumi", address: "Jl. Raya Sukabumi" },
+            
+            // 27. KOTA BANJAR
+            { lat: -7.3700, lng: 108.5340, type: "TPA", name: "TPA Banjar", address: "Jl. Raya Banjar" },
+            
+            // Sample TPS locations (100+ points)
+            ...Array(150).fill().map((_, i) => ({
+                lat: -6.5 + Math.random() * 2.5,  // Random lat across West Java
+                lng: 106.5 + Math.random() * 3,   // Random lng across West Java
+                type: "TPS",
+                name: `TPS ${i+1}`,
+                address: `Jl. Contoh No.${i+1}`
+            }))
+        ];
+
+        const map = new google.maps.Map(document.getElementById("waste-map"), {
+  center: { lat: -6.9147, lng: 107.6098 }, // Pusat Jawa Barat
+  zoom: 9,
+  mapTypeId: google.maps.MapTypeId.ROADMAP,
+  styles: [
+    {
+      featureType: "poi",
+      stylers: [{ visibility: "off" }] // Penutupan yang benar
+    }
+    // Bisa tambahkan style lainnya di sini
+  ]
+});
+
+            // Custom marker icons
+            const iconConfig = {
+                TPA: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: "#e74c3c",
+                    fillOpacity: 0.9,
+                    strokeWeight: 0,
+                    scale: 12,
+                    labelOrigin: new google.maps.Point(0, 0)
+                },
+                TPST: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: "#2ecc71",
+                    fillOpacity: 0.9,
+                    strokeWeight: 0,
+                    scale: 10,
+                    labelOrigin: new google.maps.Point(0, 0)
+                },
+                TPS: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: "#f39c12",
+                    fillOpacity: 0.9,
+                    strokeWeight: 0,
+                    scale: 8,
+                    labelOrigin: new google.maps.Point(0, 0)
+                }
+            };
+
+            // Create markers
+            const markers = wasteLocations.map(location => {
+                const marker = new google.maps.Marker({
+                    position: { lat: location.lat, lng: location.lng },
+                    map: map,
+                    title: `${location.name} (${location.type})`,
+                    icon: {
+                        ...iconConfig[location.type],
+                        label: {
+                            text: location.type === "TPA" ? "🗑️" : 
+                                  location.type === "TPST" ? "♻️" : "🚮",
+                            color: "#ffffff",
+                            fontSize: "12px",
+                            fontWeight: "bold"
+                        }
+                    }
+                });
+
+                // Info window
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="min-width: 200px">
+                            <h3 style="margin: 5px 0; color: ${
+                                location.type === "TPA" ? "#e74c3c" : 
+                                location.type === "TPST" ? "#2ecc71" : "#f39c12"
+                            }">${location.name}</h3>
+                            <p><strong>Type:</strong> ${location.type}</p>
+                            <p><strong>Address:</strong> ${location.address}</p>
+                            <p><strong>Coordinates:</strong> ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}</p>
+                        </div>
+                    `
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+
+                return marker;
+            });
+
+            // Add marker clusterer for better performance
+            if (typeof MarkerClusterer !== 'undefined') {
+                new MarkerClusterer({ map, markers });
+            }
+
+            // Map controls
+            document.getElementById('zoom-in').addEventListener('click', () => {
+                map.setZoom(map.getZoom() + 1);
+            });
+
+            document.getElementById('zoom-out').addEventListener('click', () => {
+                map.setZoom(map.getZoom() - 1);
+            });
+
+            document.getElementById('toggle-satellite').addEventListener('click', () => {
+                map.setMapTypeId(
+                    map.getMapTypeId() === google.maps.MapTypeId.ROADMAP ?
+                    google.maps.MapTypeId.SATELLITE :
+                    google.maps.MapTypeId.ROADMAP
+                );
+            });
+        }
+
+        // Main Chart
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const mainChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                datasets: [
+                    {
+                        label: 'Sampah Terkumpul (kg)',
+                        data: [1200, 1900, 1700, 2100, 2300, 2500, 2000],
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Daur Ulang (kg)',
+                        data: [400, 700, 500, 900, 1100, 800, 600],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Organik', 'Plastik', 'Kertas', 'Logam', 'Kaca', 'Lainnya'],
+                datasets: [{
+                    data: [35, 25, 15, 10, 8, 7],
+                    backgroundColor: [
+                        '#2ecc71',
+                        '#e74c3c',
+                        '#f39c12',
+                        '#3498db',
+                        '#9b59b6',
+                        '#95a5a6'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Prediction Chart
+        const predCtx = document.getElementById('predictionChart').getContext('2d');
+        const predChart = new Chart(predCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Hari Ini', 'Besok', 'H+2', 'H+3', 'H+4', 'H+5', 'H+6'],
+                datasets: [
+                    {
+                        label: 'Kab. Bandung',
+                        data: [1200, 1250, 1300, 1400, 1350, 1300, 1250],
+                        backgroundColor: '#2ecc71'
+                    },
+                    {
+                        label: 'Kota Bandung',
+                        data: [1000, 1100, 1150, 1200, 1250, 1200, 1150],
+                        backgroundColor: '#3498db'
+                    },
+                    {
+                        label: 'Kab. Bogor',
+                        data: [800, 850, 900, 950, 1000, 1050, 1000],
+                        backgroundColor: '#f39c12'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Volume Sampah (kg)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Recycling Chart
+        const recCtx = document.getElementById('recyclingChart').getContext('2d');
+        const recChart = new Chart(recCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['Plastik', 'Kertas', 'Logam', 'Kaca', 'Elektronik'],
+                datasets: [{
+                    data: [300, 150, 50, 30, 12],
+                    backgroundColor: [
+                        '#e74c3c',
+                        '#f39c12',
+                        '#3498db',
+                        '#9b59b6',
+                        '#2ecc71'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+
+        // Participation Chart
+        const partCtx = document.getElementById('participationChart').getContext('2d');
+        const partChart = new Chart(partCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep'],
+                datasets: [
+                    {
+                        label: 'Partisipasi Masyarakat',
+                        data: [1200, 1500, 1800, 2100, 2400, 2800, 3200, 3800, 4200],
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Community Chart
+        const commCtx = document.getElementById('communityChart').getContext('2d');
+        const commChart = new Chart(commCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Kota Bandung', 'Kota Bogor', 'Kab. Bandung', 'Kota Bekasi', 'Kab. Bogor', 'Kab. Karawang'],
+                datasets: [{
+                    label: 'Jumlah Komunitas',
+                    data: [28, 22, 18, 15, 12, 10],
+                    backgroundColor: [
+                        '#2ecc71',
+                        '#3498db',
+                        '#f39c12',
+                        '#e74c3c',
+                        '#9b59b6',
+                        '#34495e'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Animate progress bars
+        document.querySelectorAll('.bin-progress-bar').forEach(bar => {
+            // Random width for demo (in a real app, this would come from API)
+            const width = bar.parentElement.classList.contains('critical') ? 95 :
+                         bar.parentElement.classList.contains('warning') ? 65 : 30;
+            
+            // Set width with animation
+            setTimeout(() => {
+                bar.style.width = `${width}%`;
+            }, 500);
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Randomly update some bin statuses
+            const bins = document.querySelectorAll('.bin-card');
+            bins.forEach(bin => {
+                if (Math.random() > 0.7) {
+                    const progressBar = bin.querySelector('.bin-progress-bar');
+                    const currentWidth = parseInt(progressBar.style.width || '30');
+                    const newWidth = Math.min(100, currentWidth + Math.random() * 10);
+                    
+                    progressBar.style.width = `${newWidth}%`;
+                    
+                    // Update status if needed
+                    if (newWidth > 80) {
+                        bin.classList.remove('normal', 'warning');
+                        bin.classList.add('critical');
+                        bin.querySelector('.bin-status').textContent = 'KRITIS';
+                    } else if (newWidth > 50) {
+                        bin.classList.remove('normal', 'critical');
+                        bin.classList.add('warning');
+                        bin.querySelector('.bin-status').textContent = 'PERINGATAN';
+                    }
+                }
+            });
+            
+            // Flash critical bins
+            document.querySelectorAll('.bin-card.critical').forEach(bin => {
+                bin.classList.toggle('pulse');
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
+
+                               
